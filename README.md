@@ -1,152 +1,126 @@
 # ThreeDThings.js
 
 ## Overview
-ThreeDThings.js is a JavaScript library that consolidates 2D and 3D matrix operations and WebGL utility functions into a single ES6 module. It combines the functionality of `m3.js`, `m4.js`, and `webgl-utils.js` from the WebGL Fundamentals project, refactored into a modern ES6 class structure for easier use in WebGL applications.
+ThreeDThings.js is a JavaScript library designed to simplify 3D graphics programming with WebGL. It consolidates utilities from `webgl-utils.js`, `m3.js`, and `m4.js` into a single module, providing tools for matrix operations, WebGL buffer management, shader handling, and more. This library enables developers to create 3D graphics applications in the browser with ease.
+
+Originally developed by GFXFundamentals and modified by Önder Altıntaş, the library has been refactored to use modern ES6+ syntax, including `const`/`let` declarations, arrow functions, and module exports, improving readability and maintainability while preserving the original functionality.
 
 ## Features
-- **m3**: A collection of 2D matrix operations for transformations such as projection, translation, rotation, and scaling.
-- **m4**: A collection of 3D matrix operations for advanced transformations including perspective projection, look-at matrices, and quaternion-based operations.
-- **webGLUtils**: Utility functions for WebGL, including buffer creation, shader management, and vertex array object handling.
+- **Matrix Operations**: Includes `m3` for 2D transformations (e.g., rotation, scaling, translation) and `m4` for 3D transformations (e.g., perspective, look-at, quaternion-based operations).
+- **WebGL Utilities**: Offers tools for creating and managing WebGL buffers, vertex arrays, shaders, and programs.
+- **Augmented Typed Arrays**: Simplifies the creation and manipulation of typed arrays for WebGL attribute data.
+- **Shader and Program Management**: Streamlines loading, compiling, and linking shaders, as well as setting up uniforms and attributes.
+- **Flexible and Reusable**: Designed to be modular and reusable across various WebGL-based projects.
 
 ## Installation
-To use ThreeDThings.js in your project, include the file and import the `ThreeDThings` class:
+To use ThreeDThings.js in your project, include the script in your HTML file or import it as an ES module:
+
+```html
+<script src="path/to/ThreeDThings.js"></script>
+```
+
+or
 
 ```javascript
 import ThreeDThings from './ThreeDThings.js';
 ```
 
-Ensure your project supports ES6 modules. If using a bundler like Webpack or Rollup, configure it to handle ES6 module syntax.
+Ensure you have a WebGL-compatible browser and a WebGL context initialized in your application.
 
 ## Usage
-Create an instance of the `ThreeDThings` class to access its methods:
+Here’s a basic example of using ThreeDThings.js to set up a WebGL program and perform matrix transformations:
 
 ```javascript
+import ThreeDThings from './ThreeDThings.js';
+
+const gl = canvas.getContext('webgl');
 const threeD = new ThreeDThings();
 
-// Example: Using m3 for 2D matrix operations
-const projectionMatrix = threeD.m3.projection(800, 600);
-const translatedMatrix = threeD.m3.translate(projectionMatrix, 100, 200);
+// Create a simple vertex and fragment shader
+const vertexShaderSource = `
+  attribute vec4 a_position;
+  uniform mat4 u_matrix;
+  void main() {
+    gl_Position = u_matrix * a_position;
+  }
+`;
+const fragmentShaderSource = `
+  precision mediump float;
+  void main() {
+    gl_FragColor = vec4(1, 0, 0, 1); // Red color
+  }
+`;
 
-// Example: Using m4 for 3D matrix operations
-const perspectiveMatrix = threeD.m4.perspective(Math.PI / 3, 1, 0.1, 100);
-const lookAtMatrix = threeD.m4.lookAt([0, 0, 5], [0, 0, 0], [0, 1, 0]);
+// Create program
+const programInfo = threeD.webGLUtils.createProgramInfo(gl, [vertexShaderSource, fragmentShaderSource]);
 
-// Example: Using webGLUtils for WebGL operations
-const gl = canvas.getContext('webgl');
-threeD.webGLUtils.resizeCanvasToDisplaySize(canvas);
+// Set up buffer with triangle vertices
+const arrays = {
+  position: { numComponents: 3, data: [0, 0, 0, 1, 0, 0, 0, 1, 0] },
+};
 const bufferInfo = threeD.webGLUtils.createBufferInfoFromArrays(gl, arrays);
+
+// Create a perspective matrix
+const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+const projectionMatrix = threeD.m4.perspective(Math.PI / 4, aspect, 1, 100);
+
+// Set up the scene
+gl.useProgram(programInfo.program);
+threeD.webGLUtils.setBuffersAndAttributes(gl, programInfo.attribSetters, bufferInfo);
+threeD.webGLUtils.setUniforms(programInfo.uniformSetters, { u_matrix: projectionMatrix });
+threeD.webGLUtils.drawBufferInfo(gl, bufferInfo);
 ```
 
-## Methods
-### m3
-- `degToRad(d)`: Converts degrees to radians.
-- `distance(x1, y1, x2, y2)`: Calculates the distance between two 2D points.
-- `dot(x1, y1, x2, y2)`: Computes the dot product of two 2D vectors.
-- `identity(dst)`: Returns a 3x3 identity matrix.
+## API Reference
+
+### m3 (2D Matrix Operations)
+- `degToRad(degrees)`: Converts degrees to radians.
+- `identity(dst)`: Creates a 3x3 identity matrix.
 - `inverse(m, dst)`: Computes the inverse of a 3x3 matrix.
 - `multiply(a, b, dst)`: Multiplies two 3x3 matrices.
-- `normalize(x, y)`: Normalizes a 2D vector.
 - `projection(width, height, dst)`: Creates a 2D projection matrix.
-- `radToDeg(r)`: Converts radians to degrees.
-- `reflect(ix, iy, nx, ny)`: Reflects a 2D vector over a normal.
 - `rotation(angleInRadians, dst)`: Creates a 2D rotation matrix.
-- `rotate(m, angleInRadians, dst)`: Rotates a matrix by an angle.
-- `scaling(sx, sy, dst)`: Creates a 2D scaling matrix.
-- `scale(m, sx, sy, dst)`: Scales a matrix.
-- `transformPoint(m, v)`: Transforms a 2D point by a matrix.
-- `translation(tx, ty, dst)`: Creates a 2D translation matrix.
-- `translate(m, tx, ty, dst)`: Translates a matrix.
-- `project(m, width, height, dst)`: Applies a projection transformation.
+- `translate(m, tx, ty, dst)`: Applies translation to a 3x3 matrix.
+- ... and more.
 
-### m4
-- `copy(src, dst)`: Copies a 4x4 matrix.
-- `lookAt(cameraPosition, target, up, dst)`: Creates a look-at matrix.
-- `addVectors(a, b, dst)`: Adds two 3D vectors.
-- `subtractVectors(a, b, dst)`: Subtracts two 3D vectors.
-- `scaleVector(v, s, dst)`: Scales a 3D vector.
-- `distance(a, b)`: Calculates the distance between two 3D points.
-- `distanceSq(a, b)`: Calculates the squared distance between two 3D points.
-- `normalize(v, dst)`: Normalizes a 3D vector.
-- `compose(translation, quaternion, scale, dst)`: Composes a matrix from translation, quaternion, and scale.
-- `cross(a, b, dst)`: Computes the cross product of two 3D vectors.
-- `decompose(mat, translation, quaternion, scale)`: Decomposes a matrix into translation, quaternion, and scale.
-- `dot(a, b)`: Computes the dot product of two 3D vectors.
-- `identity(dst)`: Returns a 4x4 identity matrix.
-- `transpose(m, dst)`: Transposes a 4x4 matrix.
-- `length(v)`: Calculates the length of a 3D vector.
-- `lengthSq(v)`: Calculates the squared length of a 3D vector.
-- `orthographic(left, right, bottom, top, near, far, dst)`: Creates an orthographic projection matrix.
-- `frustum(left, right, bottom, top, near, far, dst)`: Creates a frustum projection matrix.
+### m4 (3D Matrix Operations)
 - `perspective(fieldOfViewInRadians, aspect, near, far, dst)`: Creates a perspective projection matrix.
-- `translation(tx, ty, tz, dst)`: Creates a 4x4 translation matrix.
-- `translate(m, tx, ty, tz, dst)`: Translates a 4x4 matrix.
+- `lookAt(cameraPosition, target, up, dst)`: Creates a view matrix.
+- `translate(m, tx, ty, tz, dst)`: Applies translation to a 4x4 matrix.
 - `xRotation(angleInRadians, dst)`: Creates a rotation matrix around the X-axis.
-- `yRotation(angleInRadians, dst)`: Creates a rotation matrix around the Y-axis.
-- `zRotation(angleInRadians, dst)`: Creates a rotation matrix around the Z-axis.
-- `xRotate(m, angleInRadians, dst)`: Rotates a matrix around the X-axis.
-- `yRotate(m, angleInRadians, dst)`: Rotates a matrix around the Y-axis.
-- `zRotate(m, angleInRadians, dst)`: Rotates a matrix around the Z-axis.
-- `axisRotation(axis, angleInRadians, dst)`: Creates a rotation matrix around an arbitrary axis.
-- `axisRotate(m, axis, angleInRadians, dst)`: Rotates a matrix around an arbitrary axis.
-- `scaling(sx, sy, sz, dst)`: Creates a 4x4 scaling matrix.
-- `scale(m, sx, sy, sz, dst)`: Scales a 4x4 matrix.
-- `multiply(a, b, dst)`: Multiplies two 4x4 matrices.
 - `inverse(m, dst)`: Computes the inverse of a 4x4 matrix.
-- `transformVector(m, v, dst)`: Transforms a 4D vector by a matrix.
-- `transformPoint(m, v, dst)`: Transforms a 3D point by a matrix.
-- `transformDirection(m, v, dst)`: Transforms a 3D direction by a matrix.
-- `transformNormal(m, v, dst)`: Transforms a 3D normal by a matrix.
-- `setDefaultType(Ctor)`: Sets the default array type.
-- `quatFromRotationMatrix(m, dst)`: Converts a rotation matrix to a quaternion.
-- `determinate(m)`: Computes the determinant of a 4x4 matrix.
-- `cofactor(m, row, col)`: Computes the cofactor of a matrix element.
+- `transformPoint(m, v, dst)`: Transforms a 3D point using a 4x4 matrix.
+- ... and more.
 
 ### webGLUtils
-- `createAugmentedTypedArray(numComponents, numElements, opt_type)`: Creates a typed array with additional functionality.
-- `createAttribsFromArrays(gl, arrays, opt_mapping)`: Creates attribute objects from arrays.
-- `createBuffersFromArrays(gl, arrays)`: Creates WebGL buffers from arrays.
-- `createBufferInfoFromArrays(gl, arrays, opt_mapping)`: Creates a buffer info object.
-- `createAttributeSetters(gl, program)`: Creates setters for program attributes.
-- `createProgram(gl, shaders, opt_attribs, opt_locations, opt_errorCallback)`: Creates a WebGL program.
-- `createProgramFromScripts(gl, shaderScriptIds, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program from script elements.
-- `createProgramFromSources(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program from shader source strings.
-- `createProgramInfo(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program info object with setters.
-- `createUniformSetters(gl, program)`: Creates setters for program uniforms.
-- `createVAOAndSetAttributes(gl, setters, attribs, indices)`: Creates and sets up a vertex array object.
-- `createVAOFromBufferInfo(gl, programInfo, bufferInfo)`: Creates a VAO from buffer info.
-- `drawBufferInfo(gl, bufferInfo, primitiveType, count, offset)`: Draws using buffer info.
-- `drawObjectList(gl, objectsToDraw)`: Draws a list of objects.
-- `glEnumToString(gl, v)`: Converts a WebGL enum to a string.
-- `getExtensionWithKnownPrefixes(gl, name)`: Gets a WebGL extension with known prefixes.
+- `createProgramInfo(gl, shaderSources)`: Creates a WebGL program with associated uniform and attribute setters.
+- `createBufferInfoFromArrays(gl, arrays)`: Creates buffer information from array data.
+- `drawBufferInfo(gl, bufferInfo)`: Draws a buffer using WebGL.
 - `resizeCanvasToDisplaySize(canvas, multiplier)`: Resizes a canvas to match its display size.
-- `setAttributes(setters, attribs)`: Sets WebGL attributes.
-- `setBuffersAndAttributes(gl, setters, buffers)`: Sets buffers and attributes.
-- `setUniforms(setters, ...values)`: Sets WebGL uniforms.
-- `loadShader(gl, shaderSource, shaderType, opt_errorCallback)`: Loads and compiles a shader.
-- `getBindPointForSamplerType(gl, type)`: Gets the bind point for a sampler type.
-- `makeTypedArray(array, name)`: Converts an array to a typed array.
-- `getGLTypeForTypedArray(gl, typedArray)`: Gets the WebGL type for a typed array.
-- `getNormalizationForTypedArray(typedArray)`: Determines if a typed array needs normalization.
-- `guessNumComponentsFromName(name, length)`: Guesses the number of components from an array name.
-- `getNumElementsFromNonIndexedArrays(arrays)`: Gets the number of elements from non-indexed arrays.
-- `createBufferFromTypedArray(gl, array, type, drawType)`: Creates a WebGL buffer from a typed array.
+- `setUniforms(setters, values)`: Sets uniform values for a WebGL program.
+- ... and more.
 
 ## License
-This library includes code from `m3.js`, `m4.js`, and `webgl-utils.js`, originally created by Gregg Tavares. The code is licensed under the following terms:
+The software is provided under the following terms, as specified by GFXFundamentals:
 
-```
-Copyright 2012, Gregg Tavares.
-All rights reserved.
+- **Redistribution and use** in source and binary forms, with or without modification, are permitted provided that:
+  - The source code retains the original copyright notice, conditions, and disclaimer.
+  - Binary distributions reproduce the copyright notice, conditions, and disclaimer in the documentation or other materials.
+  - The name of GFXFundamentals or its contributors may not be used to endorse or promote products derived from this software without specific prior written permission.
+- The software is provided "AS IS" without any express or implied warranties, including but not limited to merchantability or fitness for a particular purpose.
+- The copyright holders and contributors are not liable for any direct, indirect, incidental, special, exemplary, or consequential damages arising from the use of this software.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+For the full license text, refer to the copyright notice at the top of the `ThreeDThings.js` file.
 
-* Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation and/or other materials provided with the distribution.
-* Neither the name of Gregg Tavares nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+Copyright © 2021 GFXFundamentals.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
+## Modifications
+This version of the library was created by Önder Altıntaş with the following modifications:
+- Combined `webgl-utils.js`, `m3.js`, and `m4.js` into a single file.
+- Refactored the codebase to use ES6+ syntax, including `const`/`let`, arrow functions, and module exports.
 
-## Credits
-- Original code by Gregg Tavares from [WebGL Fundamentals](https://webglfundamentals.org/).
-- Refactored into ES6 module by Önder ALTINTAŞ.
+## Contributing
+Contributions are welcome! Please submit pull requests or issues to the repository (if available) or contact the maintainer for suggestions and improvements. Ensure compliance with the licensing terms when contributing.
+
+## Contact
+For questions or feedback, reach out to the original author or maintainer as noted in the source code.
