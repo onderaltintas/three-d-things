@@ -1,7 +1,7 @@
 # ThreeDThings.js
 
 ## Overview
-ThreeDThings.js is a JavaScript library that consolidates 2D and 3D matrix operations and WebGL utility functions into a single ES6 module. It combines the functionality of `m3.js`, `m4.js`, and `webgl-utils.js` from the [WebGL Fundamentals](https://webglfundamentals.org/) project, refactored into a modern ES6 class structure for easier use in WebGL applications.
+ThreeDThings.js is a JavaScript library that consolidates 2D and 3D matrix operations and WebGL utility functions into a single ES6 module. It combines the functionality of `m3.js`, `m4.js`, and `webgl-utils.js` from the WebGL Fundamentals project, refactored into a modern ES6 class structure for easier use in WebGL applications.
 
 ## Features
 - **m3**: A collection of 2D matrix operations for transformations such as projection, translation, rotation, and scaling.
@@ -84,4 +84,69 @@ const bufferInfo = threeD.webGLUtils.createBufferInfoFromArrays(gl, arrays);
 - `yRotation(angleInRadians, dst)`: Creates a rotation matrix around the Y-axis.
 - `zRotation(angleInRadians, dst)`: Creates a rotation matrix around the Z-axis.
 - `xRotate(m, angleInRadians, dst)`: Rotates a matrix around the X-axis.
-- `yRotate(m, angle
+- `yRotate(m, angleInRadians, dst)`: Rotates a matrix around the Y-axis.
+- `zRotate(m, angleInRadians, dst)`: Rotates a matrix around the Z-axis.
+- `axisRotation(axis, angleInRadians, dst)`: Creates a rotation matrix around an arbitrary axis.
+- `axisRotate(m, axis, angleInRadians, dst)`: Rotates a matrix around an arbitrary axis.
+- `scaling(sx, sy, sz, dst)`: Creates a 4x4 scaling matrix.
+- `scale(m, sx, sy, sz, dst)`: Scales a 4x4 matrix.
+- `multiply(a, b, dst)`: Multiplies two 4x4 matrices.
+- `inverse(m, dst)`: Computes the inverse of a 4x4 matrix.
+- `transformVector(m, v, dst)`: Transforms a 4D vector by a matrix.
+- `transformPoint(m, v, dst)`: Transforms a 3D point by a matrix.
+- `transformDirection(m, v, dst)`: Transforms a 3D direction by a matrix.
+- `transformNormal(m, v, dst)`: Transforms a 3D normal by a matrix.
+- `setDefaultType(Ctor)`: Sets the default array type.
+- `quatFromRotationMatrix(m, dst)`: Converts a rotation matrix to a quaternion.
+- `determinate(m)`: Computes the determinant of a 4x4 matrix.
+- `cofactor(m, row, col)`: Computes the cofactor of a matrix element.
+
+### webGLUtils
+- `createAugmentedTypedArray(numComponents, numElements, opt_type)`: Creates a typed array with additional functionality.
+- `createAttribsFromArrays(gl, arrays, opt_mapping)`: Creates attribute objects from arrays.
+- `createBuffersFromArrays(gl, arrays)`: Creates WebGL buffers from arrays.
+- `createBufferInfoFromArrays(gl, arrays, opt_mapping)`: Creates a buffer info object.
+- `createAttributeSetters(gl, program)`: Creates setters for program attributes.
+- `createProgram(gl, shaders, opt_attribs, opt_locations, opt_errorCallback)`: Creates a WebGL program.
+- `createProgramFromScripts(gl, shaderScriptIds, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program from script elements.
+- `createProgramFromSources(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program from shader source strings.
+- `createProgramInfo(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback)`: Creates a program info object with setters.
+- `createUniformSetters(gl, program)`: Creates setters for program uniforms.
+- `createVAOAndSetAttributes(gl, setters, attribs, indices)`: Creates and sets up a vertex array object.
+- `createVAOFromBufferInfo(gl, programInfo, bufferInfo)`: Creates a VAO from buffer info.
+- `drawBufferInfo(gl, bufferInfo, primitiveType, count, offset)`: Draws using buffer info.
+- `drawObjectList(gl, objectsToDraw)`: Draws a list of objects.
+- `glEnumToString(gl, v)`: Converts a WebGL enum to a string.
+- `getExtensionWithKnownPrefixes(gl, name)`: Gets a WebGL extension with known prefixes.
+- `resizeCanvasToDisplaySize(canvas, multiplier)`: Resizes a canvas to match its display size.
+- `setAttributes(setters, attribs)`: Sets WebGL attributes.
+- `setBuffersAndAttributes(gl, setters, buffers)`: Sets buffers and attributes.
+- `setUniforms(setters, ...values)`: Sets WebGL uniforms.
+- `loadShader(gl, shaderSource, shaderType, opt_errorCallback)`: Loads and compiles a shader.
+- `getBindPointForSamplerType(gl, type)`: Gets the bind point for a sampler type.
+- `makeTypedArray(array, name)`: Converts an array to a typed array.
+- `getGLTypeForTypedArray(gl, typedArray)`: Gets the WebGL type for a typed array.
+- `getNormalizationForTypedArray(typedArray)`: Determines if a typed array needs normalization.
+- `guessNumComponentsFromName(name, length)`: Guesses the number of components from an array name.
+- `getNumElementsFromNonIndexedArrays(arrays)`: Gets the number of elements from non-indexed arrays.
+- `createBufferFromTypedArray(gl, array, type, drawType)`: Creates a WebGL buffer from a typed array.
+
+## License
+This library includes code from `m3.js`, `m4.js`, and `webgl-utils.js`, originally created by Gregg Tavares. The code is licensed under the following terms:
+
+```
+Copyright 2012, Gregg Tavares.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation and/or other materials provided with the distribution.
+* Neither the name of Gregg Tavares nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```
+
+## Credits
+- Original code by Gregg Tavares from [WebGL Fundamentals](https://webglfundamentals.org/).
+- Refactored into ES6 module by Önder ALTINTAŞ.
